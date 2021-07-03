@@ -9,7 +9,7 @@ pip install git+https://github.com/dev-pay/node-js-sdk.git
 ```
 
 ## Usage
-```
+```python
    paymentDetails = { "amount":<amount>,
                 "currency":"usd",
                 "card":{"cardNum":"XXXX111111000000",
