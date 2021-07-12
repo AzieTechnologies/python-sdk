@@ -14,6 +14,11 @@ class DevpayClient:
     self.restClient = RestClient(config)
 
   def confirmPayment(self, paymentDetails):
+    response = self.restClient.devpayPaymentIntentResponse(self.config,paymentDetails)
+    status = response.json()["Response"]["status"]
+    if status != 1:
+      raise ValueError('Failed to create the dev-pay payment intent')
+
     response = self.restClient.providerAPIKeyResponse()
     providedKey = response.json()["provider_api_key"]
 
