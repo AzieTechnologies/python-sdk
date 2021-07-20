@@ -8,9 +8,13 @@ A Python SDK for Devpay Payment Gateway Get your API Keys at https://devpay.io
 <div>
 
 ![GitHub followers](https://img.shields.io/github/followers/dev-pay?style=social)
+![GitHub all releases](https://img.shields.io/github/downloads/dev-pay/python-sdk/total?style=plastic)
+![GitHub last commit](https://img.shields.io/github/last-commit/dev-pay/python-sdk?style=plastic)
 ![GitHub](https://img.shields.io/github/license/dev-pay/python-sdk?style=plastic)
 ![GitHub language count](https://img.shields.io/github/languages/count/dev-pay/python-sdk?style=plastic)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/py?style=plastic)
+![Maintenance](https://img.shields.io/maintenance/yes/2021?style=plastic)
+![GitHub top language](https://img.shields.io/github/languages/top/dev-pay/python-sdk?style=plastic)
  
 </div>
 
