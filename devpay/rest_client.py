@@ -4,11 +4,9 @@ import logging
 API_ENDPOINTS = {
                 'SANDBOX': {
                     'PAYSAFE': 'https://hosted.test.paysafe.com',
-                    'TILLED': 'https://sandbox-api.tilled.com'
                 },
                 'PROD': {
                     'PAYSAFE': 'https://hosted.paysafe.com',
-                    'TILLED': 'https://api.tilled.com',
                 },
                 'DEVPAY':"https://api.devpay.io"
             }
@@ -28,13 +26,24 @@ class RestClient:
 
     def providerAPIKeyResponse(self):
 
-        uri = self.apiEndPoint('TILLED')
-        uri = uri+'/v1/payment-providers/paysafe/api-key'
-        logging.info("Reqeust - GET - %s ",uri)
-        response = requests.get(uri,
-            headers={"Authorization":"Bearer "+self.config.shareableKey,
-                        "Content-Type":"application/json",
-                        "Tilled-Account":self.config.accountId}
+        uri = API_ENDPOINTS['DEVPAY']
+        uri = uri+'/v1/general.svc/paysafe/api-key'
+        logging.info("Reqeust - POST - %s ",uri)
+
+        requestDetails = {
+                "DevpayId":self.config.accountId,
+                "token":self.config.accessKey
+        }
+        if self.config.sandbox:
+            requestDetails["env"] = "sandbox"
+
+        payload = {
+                "RequestDetails":requestDetails
+        }
+
+        response = requests.post(uri,
+            json=payload,
+            headers={"Content-Type":"application/json", 'User-Agent': 'dev-pay client'}
             )
         logging.info("Response - %s",response.text)
         return response
@@ -54,7 +63,7 @@ class RestClient:
         return response
 
     def paymentMethodResponse(self, paymentToken,paymentDetail):
-        payload = {
+        paymentMethodInfo = {
             "payment_token":paymentToken,
             "type":"card",
             "billing_details":{
@@ -63,21 +72,34 @@ class RestClient:
                 "address":paymentDetail["billingAddress"]
             }
         }
-        uri = self.apiEndPoint('TILLED')
-        uri = uri+'/v1/payment-methods'
+
+        requestDetails = {
+                "DevpayId":self.config.accountId,
+                "token":self.config.accessKey
+        }
+        if self.config.sandbox:
+            requestDetails["env"] = "sandbox"
+
+        payload = {
+                "PaymentMethodInfo":paymentMethodInfo,
+                "RequestDetails":requestDetails
+        }
+
+        uri = API_ENDPOINTS['DEVPAY']
+        uri = uri+'/v1/paymentmethods/create'
         logging.info("Reqeust - POST - %s, Data - %s ",uri,str(payload))
+
 
         response = requests.post(uri,
             json=payload,
-            headers={"Authorization":"Bearer "+self.config.shareableKey,
-                        "Content-Type":"application/json",
-                        "Tilled-Account":self.config.accountId}
+            headers={"Content-Type":"application/json", 'User-Agent': 'dev-pay client'}
             )
         logging.info("Response - %s",response.text)
         return response
 
-    def paymentIntentResponse(self, paymentMethod,paymentDetail):
-        payload = {
+    def paymentIntentResponse(self,paymentMethod, paymentDetail):
+        
+        paymentIntentsInfo = {
                 "amount":paymentDetail["amount"],
                 "type":"card",
                 "currency":paymentDetail["currency"],
@@ -87,31 +109,10 @@ class RestClient:
                 "confirm":True,
                 "metaData":paymentDetail.get("metaData",{})
         }
-        
-        uri = self.apiEndPoint('TILLED')
-        uri = uri+'/v1/payment-intents'
-        logging.info("Reqeust - POST - %s, Data - %s ",uri,str(payload))
-        response = requests.post(uri,
-            json=payload,
-            headers={"Authorization":"Bearer "+self.config.accessKey,
-                        "Content-Type":"application/json",
-                        "Tilled-Account":self.config.accountId}
-            )
-        logging.info("Response - %s",response.text)
-        return response
-
-    def devpayPaymentIntentResponse(self,config, paymentDetail):
-        
-        paymentIntentsInfo = {
-                "amount":paymentDetail["amount"],
-                "currency":paymentDetail["currency"],
-                "capture_method":"automatic",
-                "payment_method_types":["card"]
-        }
 
         requestDetails = {
-                "DevpayId":config.accountId,
-                "token":config.accessKey
+                "DevpayId":self.config.accountId,
+                "token":self.config.accessKey
         }
         if self.config.sandbox:
             requestDetails["env"] = "sandbox"
@@ -121,7 +122,7 @@ class RestClient:
                 "RequestDetails":requestDetails
         }
         
-        uri = API_ENDPOINTS["DEVPAY"]
+        uri = API_ENDPOINTS['DEVPAY']
         uri = uri+"/v1/general/paymentintent"
         logging.info("Reqeust - POST - %s, Data - %s ",uri,str(payload))
         # Added custom User-Agent to avoid 403 HTTP error
